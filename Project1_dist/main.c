@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h> 
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "util.h"
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   }
 
   /* Comment out the following line before submission */
-  show_targets(targets, nTargetCount);
+ //show_targets(targets, nTargetCount);
 
   /*
    * Set Targetname
@@ -66,15 +66,18 @@ int main(int argc, char *argv[]) {
   if(argc == 1) {
     strcpy(TargetName, argv[optind]);
   } else {
+
     strcpy(TargetName, targets[0].TargetName);
   }
 
+  //int target_index = find_target(TargetName,targets,nTargetCount);
+  make_exec(TargetName, targets, nTargetCount);
   /*
    * Now, the file has been parsed and the targets have been named.
-   * You'll now want to check all dependencies (whether they are 
-   * available targets or files) and then execute the target that 
-   * was specified on the command line, along with their dependencies, 
-   * etc. Else if no target is mentioned then build the first target 
+   * You'll now want to check all dependencies (whether they are
+   * available targets or files) and then execute the target that
+   * was specified on the command line, along with their dependencies,
+   * etc. Else if no target is mentioned then build the first target
    * found in Makefile.
    */
 
@@ -83,4 +86,53 @@ int main(int argc, char *argv[]) {
    */
 
   return 0;
+}
+
+void make_exec(char* TargetName, target_t targets[], int nTargetCount){
+  int target_index = find_target(TargetName,targets,nTargetCount);
+  char* TargetNamedepend;
+  //target exists
+   if(target_index != -1){
+    if (targets[target_index].DependencyCount > 0){
+      for (int i=0; i<targets[target_index].DependencyCount; i++){
+        TargetNamedepend= targets[target_index].DependencyNames[i];
+
+       if ((compare_modification_time(TargetName, TargetNamedepend)==2)
+              || (compare_modification_time(TargetName, TargetNamedepend)==-1)){
+         //printf("make_exec run %s",TargetNamedepend);
+         make_exec(TargetNamedepend, targets, nTargetCount);
+      }
+      }
+      //look at dependencies and recurse through till no more dependencies are found
+    }
+  }
+  //target not exists
+    else{
+      //target exist but file do not exist
+      if (does_file_exist(TargetName)==-1){
+        printf("%s file does not exist", TargetName);
+        return;
+      }
+      //both target and file do not exist
+      return;
+    }
+
+    int pid = fork();
+    if (pid == 0){
+      fprintf(stderr, "%s\n ", targets[target_index].Command);
+      char **arg = build_argv(targets[target_index].Command);
+      execvp(*arg,arg);
+    }
+    else {
+      int wstatus;
+      wait(&wstatus);
+      if (WEXITSTATUS(wstatus) != 0)
+      {
+        printf("child exited with error code=%d\n", WEXITSTATUS(wstatus));
+        exit(-1);
+      }
+    }
+
+
+  return;
 }
