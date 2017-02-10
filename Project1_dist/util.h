@@ -54,6 +54,23 @@ typedef struct target{
                                * Finished etc. based on your implementation) */
 }target_t;
 
+/*
+Mimics UNIX make command by recursively
+seeking and building
+dependencies that are out of date
+
+Input:
+  TargetName, the first target(default root) in DAG, or specified target in DAG
+
+  targets, a static array saving target objects
+
+  nTargetCount, number of targets in makefile
+
+  Return:
+
+  1 - Tree's node was updated. Above nodes need updating
+  0 - Node up to date
+*/
 int make_exec(char* TargetName, target_t targets[], int nTargetCount);
 
 /*

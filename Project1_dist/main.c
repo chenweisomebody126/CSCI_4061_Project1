@@ -19,6 +19,7 @@ void show_error_message(char * ExecName) {
 int main(int argc, char *argv[]) {
   target_t targets[MAX_NODES];
   int nTargetCount = 0;
+  int updated;
 
 
   /* Variables you'll want to use */
@@ -37,6 +38,7 @@ int main(int argc, char *argv[]) {
         strcpy(Makefile, strdup(optarg));
         break;
       case 'h':
+
       default:
         show_error_message(argv[0]);
         exit(1);
@@ -46,7 +48,7 @@ int main(int argc, char *argv[]) {
   argc -= optind;
   if(argc > 1) {
     show_error_message(argv[0]);
-    return -1;
+    return -1;time run make
   }
 
   /* Init Targets */
@@ -56,7 +58,8 @@ int main(int argc, char *argv[]) {
   if((nTargetCount = parse(Makefile, targets)) == -1) {
     return -1;
   }
-  //initialize3 the target_t.Status =0 evryt time run make
+  //Initialize the targets[].Status to zerotime run make for each run of make4061
+  //This provides us with accurate values for if a dependency was visited yet or not
   for (int i=0;i<nTargetCount;i++)
   targets[i].Status = 0;
   /* Comment out the following line before submission */
@@ -73,8 +76,7 @@ int main(int argc, char *argv[]) {
     strcpy(TargetName, targets[0].TargetName);
   }
 
-  //int target_index = find_target(TargetName,targets,nTargetCount);
-  make_exec(TargetName, targets, nTargetCount);
+
   /*
    * Now, the file has been parsed and the targets have been named.
    * You'll now want to check all dependencies (whether they are
@@ -84,14 +86,21 @@ int main(int argc, char *argv[]) {
    * found in Makefile.
    */
 
-  /*
-   * INSERT YOUR CODE HERE
-   */
+/*Call our function and retain flag.
+    updated:
+    0 --> Nothing was updated when running program. Tell user.
+    1 --> Main target was updated.
+*/
+   updated = make_exec(TargetName, targets, nTargetCount);
+   if (updated == 0){
+     fprintf(stderr, "make4061: '%s' is up to date.\n", TargetName);
+   }
 
   return 0;
 }
+
 /*
-use make_exc to do wo functions:
+use make_exec to do two functions:
 1)check the timestamp and file existence
 2)build and create child process
 */
@@ -109,6 +118,8 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
       //loop through all dependency
       //as long as one dependency's subtree needs to be updated or current level timestamp is stale
       for (int i=0; i<targets[target_index].DependencyCount; i++){
+        TargetNamedepend= targets[target_index].DependencyNames[i];
+
         if ((make_exec(TargetNamedepend, targets, nTargetCount)==1) ||
         (compare_modification_time(TargetName, TargetNamedepend)==-1) ||
         (compare_modification_time(TargetName, TargetNamedepend)==2)){
@@ -127,9 +138,9 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
   else{
   //reach the leaf, but file or target does not exist
     if (does_file_exist(TargetName)==-1){
-      printf("%s file does not exist", TargetName);
+      fprintf(stderr, "make4061: No rule to make target '%s'. Stop\n", TargetName);
       //exit with error
-      exit(1);
+      exit(-1);
     }
     //leaf should not always create process
     return flag;
@@ -138,17 +149,25 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
   if (flag==1 &&  targets[target_index].Status == 0){
     targets[target_index].Status = 1;
     pid_t pid = fork();
+
+    //Child process. Exec to run command
     if (pid == 0){
       fprintf(stderr, "%s\n", targets[target_index].Command);
       char **arg = build_argv(targets[target_index].Command);
       execvp(*arg,arg);
     }
-      //
+    //Child process could not be created. Stop
+    else if (pid == -1){
+      fprintf(stderr, "make4061: Child process creation for '%s' failed!\n", TargetName);
+      exit(-1);
+    }
+    //Parent waits for child to exit
     else {
       int wstatus;
+      //child created but exited improperly. Stop
       wait(&wstatus);
       if (WEXITSTATUS(wstatus) != 0){
-        printf("child exited with error code=%d\n", WEXITSTATUS(wstatus));
+        printf("make4061: Child exited with error code=%d\n with regards to '%s'", WEXITSTATUS(wstatus), TargetName);
         exit(-1);
       }
     }
