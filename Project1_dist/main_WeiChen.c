@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
   target_t targets[MAX_NODES];
   int nTargetCount = 0;
 
-
   /* Variables you'll want to use */
   char Makefile[64] = "Makefile";
   char TargetName[64];
@@ -56,9 +55,7 @@ int main(int argc, char *argv[]) {
   if((nTargetCount = parse(Makefile, targets)) == -1) {
     return -1;
   }
-  //initialize3 the target_t.Status =0 evryt time run make
-  for (int i=0;i<nTargetCount;i++)
-  targets[i].Status = 0;
+
   /* Comment out the following line before submission */
  //show_targets(targets, nTargetCount);
 
@@ -99,8 +96,6 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
   //create flag with default value 0, indicating no need to update
   int flag= 0;
   int target_index = find_target(TargetName,targets,nTargetCount);
-  //default status to 0 i.e. we have not visited this node before
-  //targets[target_index].Status = 0;
   char* TargetNamedepend;
   //target exists
   if(target_index != -1){
@@ -109,11 +104,11 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
       //loop through all dependency
       //as long as one dependency's subtree needs to be updated or current level timestamp is stale
       for (int i=0; i<targets[target_index].DependencyCount; i++){
-        if ((make_exec(TargetNamedepend, targets, nTargetCount)==1) ||
-        (compare_modification_time(TargetName, TargetNamedepend)==-1) ||
-        (compare_modification_time(TargetName, TargetNamedepend)==2)){
-            flag=1;
-        }
+        TargetNamedepend= targets[target_index].DependencyNames[i];
+          if ((make_exec(TargetNamedepend, targets, nTargetCount==1）||
+           (compare_modification_time(TargetName, TargetNamedepend)==2 || -1) ){
+              flag=1;
+          };
       }
     }
     //it is a target but no dependency
@@ -131,15 +126,15 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
       //exit with error
       exit(1);
     }
-    //leaf should not always create process
+    //leaf should always create process
+    flag=1;
     return flag;
   }
   //file does exist and check update flag
-  if (flag==1 &&  targets[target_index].Status == 0){
-    targets[target_index].Status = 1;
-    pid_t pid = fork();
+  if (flag==1){
+    int pid = fork();
     if (pid == 0){
-      fprintf(stderr, "%s\n", targets[target_index].Command);
+      fprintf(stderr, "%s\n ", targets[target_index].Command);
       char **arg = build_argv(targets[target_index].Command);
       execvp(*arg,arg);
     }

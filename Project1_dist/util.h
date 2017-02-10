@@ -14,7 +14,8 @@
 
 #define MAX_NODES 10
 
-/* 
+
+/*
  * Check if file exist
  *
  * Input:
@@ -41,7 +42,7 @@ int does_file_exist(char *FileName);
  */
 int compare_modification_time(char *FileName1, char *FileName2);
 
-/* 
+/*
  * A Vertex in the DAG
  */
 typedef struct target{
@@ -50,8 +51,10 @@ typedef struct target{
   char DependencyNames[10][64]; /* Names of all the dependencies */
   char Command[256];            /* Command that needs to be executed for this target */
   int  Status;                  /* Status of the target (Ready for execution,
-                                 * Finished etc. based on your implementation) */
+                               * Finished etc. based on your implementation) */
 }target_t;
+
+int make_exec(char* TargetName, target_t targets[], int nTargetCount);
 
 /*
  * Parse Makefile, build the DAG of target dependencies
