@@ -139,7 +139,7 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
   //reach the leaf, but file or target does not exist
     if (does_file_exist(TargetName)==-1){
       fprintf(stderr, "make4061: No rule to make target '%s'. Stop\n", TargetName);
-      //exit with error
+      //exit with error because file is not present
       exit(-1);
     }
     //leaf should not always create process
