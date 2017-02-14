@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   argc -= optind;
   if(argc > 1) {
     show_error_message(argv[0]);
-    return -1;time run make
+    return -1;
   }
 
   /* Init Targets */
