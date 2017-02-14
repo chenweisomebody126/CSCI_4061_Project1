@@ -167,7 +167,7 @@ int make_exec(char* TargetName, target_t targets[], int nTargetCount){
       //child created but exited improperly. Stop
       wait(&wstatus);
       if (WEXITSTATUS(wstatus) != 0){
-        printf("make4061: Child exited with error code=%d\n with regards to '%s'", WEXITSTATUS(wstatus), TargetName);
+        printf("make4061: Child exited with error code=%d with regards to '%s'\n", WEXITSTATUS(wstatus), TargetName);
         exit(-1);
       }
     }
